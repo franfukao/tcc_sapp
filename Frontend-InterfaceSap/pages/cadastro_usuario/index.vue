@@ -32,15 +32,19 @@
           v-model="cadastro.edv"
           required
         />
-        <input
-          type="text"
-          name="responsavel"
-          class="inputs"
-          id="input4"
-          placeholder="Responsavel"
-          v-model="cadastro.edv"
-          required
+
+        <!--  -->
+
+        <AutoComplete
+          :multiple="false"
+          v-model="selectedResponsavel"
+          @complete="searchResponsavel($event)"
+          :suggestions="filteredResponsavel"
+          field="nomeResponsavel"
+          id="Responsavel"
+          placeholder="Preencha..."
         />
+
         <select name="nivelAcesso" class="inputs">
           <option value="adm">Administrador</option>
           <option value="apre">Aprendiz</option>
@@ -74,9 +78,12 @@ export default {
         password: '',
         email: '',
         edv: '',
-        idRespFK: 1,
+        idRespFK: '',
         idNivelAcessFK: 1,
       },
+      selectedResponsavel: [],
+      filteredResponsavel: [],
+      allResponsaveis: [],
     }
   },
 
@@ -116,6 +123,37 @@ export default {
           })
       }
     },
+
+    searchResponsavel(event) {
+      setTimeout(() => {
+        if (!event.query.trim().length) {
+          this.filteredResponsavel = [...this.allResponsaveis]
+        } else {
+          this.filteredResponsavel = this.allResponsaveis.filter(
+            (nomeResponsavel) => {
+              return nomeResponsavel.nomeResponsavel
+                .toLowerCase()
+                .startsWith(event.query.toLowerCase())
+            }
+          )
+        }
+      }, 250)
+    },
+
+    getResponsaveis: async function () {
+      await this.$axios
+        .$get('http://localhost:8000/Responsavel/')
+        .then((response) => {
+          this.allResponsaveis = response.data
+          console.log(this.allResponsaveis)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    },
+  },
+  created() {
+    this.getResponsaveis()
   },
 }
 </script>
